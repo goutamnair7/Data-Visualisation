@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Pulsar Graph</title>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js"></script>
+    <script type="text/javascript" src="simple-graph.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+    <style type="text/css">
+      body { font: 13px sans-serif; }
+      rect { fill: #FFF; }
+      ul {
+        list-style-type: none;
+        margin: 0.5em 0em 0.5em 0em;
+        width: 100%; }
+        ul li {
+          display: table-cell;
+          vertical-align: middle;
+          margin: 0em;
+          padding: 0em 1em; }
+      .axis { font-size: 1.5em; }
+      .chart {
+        background-color: #FFF;
+        width: 1345px;
+        height: 600px; }
+      path {
+        fill: none;
+        stroke: lightgreen;
+        stroke-width: 6px;
+      }
+      circle {
+        fill: white;
+        stroke: green;
+        stroke-width: 2px;
+        fill-opacity: 1;
+        cursor: move; }
+        circle.selected {
+          fill: orange;
+          stroke: red; }
+        circle:hover {
+          fill: orange;
+          stroke: orange; }
+        circle.selected:hover {
+          fill: orange;
+          stroke: red; }
+        text {
+            font-size: 12px;
+            fill: #888;
+        }
+        .tooltip{
+            position: absolute;         
+            text-align: center;         
+            width: 225px;                    
+            height: 180px;                   
+            padding: 2px;               
+            font: 16px serif;      
+            background: white;
+            color:orange;
+        }
+        table{
+            width:100%;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="chart1" class="chart" style="margin-top:40px;"></div>
+  </body>
+</html>
+
