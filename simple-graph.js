@@ -313,7 +313,7 @@ SimpleGraph.prototype.keydown = function() {
       case 46: { // delete
         var i = self.points.indexOf(self.selected);
         self.points.splice(i, 1);
-        self.selected = self.points.length ? self.points[i > 0 ? i - 1 : 0] : null;
+        self.selected = null;
         $('.tooltip').remove();
         self.update();
         break;
