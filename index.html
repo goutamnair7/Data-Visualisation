@@ -5,7 +5,10 @@
     <title>Pulsar Graph</title>
     <script type="text/javascript" src="https://d3js.org/d3.v2.js"></script>
     <script type="text/javascript" src="simple-graph.js"></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-1.6.2.min.js"></script>
+    <!--<script type="text/javascript" src="https://code.jquery.com/jquery-1.6.2.min.js"></script>-->
+    <script src="http://code.jquery.com/jquery-1.12.2.min.js" integrity="sha256-lZFHibXzMHo3GGeehn1hudTAP3Sc0uKXBXAzHX1sjtk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <script type="text/javascript" src="bootstrap.min.js"></script>
     <style type="text/css">
       body { font: 13px sans-serif; }
       rect { fill: #FFF; }
@@ -21,11 +24,13 @@
       .axis { font-size: 1.5em; }
       .chart {
         background-color: #FFF;
-        width: 1345px;
-        height: 600px; }
+        width: 1000px;
+        height: 500px;
+        float:left;
+      }
       path {
         fill: none;
-        stroke: lightgreen;
+        stroke: none;
         stroke-width: 6px;
       }
       circle {
@@ -60,10 +65,123 @@
         table{
             width:100%;
         }
+        #add_point_form{
+            visibility:hidden;
+            position:absolute;
+            background:white;
+            border:2px solid #3c3c3c;
+            color:black;
+            z-index:100;
+            width: 800px;
+            height:400px;
+            padding:20px;
+        }
+        .dimmer{
+            background: #000;
+            position: absolute;
+            opacity: .5;
+            top: 0;
+            z-index:99;
+        }
+        #message{
+            visibility:hidden;
+        }
     </style>
   </head>
   <body>
-    <div id="chart1" class="chart" style="margin-top:40px;"></div>
+    <div class="row" style="margin-top:60px;width:1350px;">
+        <div class="col-xs-12 col-md-3">
+            <div class="row" style="margin-left:20px;">
+                <h3>Graph options:</h3>
+                    <button class="btn btn-default active" type="button" id="scatter" style="margin:10px;">Scatter Plot</button>
+                    <button class="btn btn-default" type="button" id="line">Line Plot</button>
+            </div>
+            <div class="row" style="margin-left:30px;">
+                <button class="btn btn-success" type="button" id="add">Add point</button>
+                <div id="add_point_form">
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <input class="form-control" type="text" id="pulsar" name="Pulsar" placeholder="Pulsar Name:"/>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <input class="form-control" type="number" id="toa" name="TOAs" placeholder="Number of times-of-arrival (TOAs):"/>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <input class="form-control" type="number" id="raw_p" placeholder="Raw Profiles:"/>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <input class="form-control" type="number" id="period" placeholder="Period (in seconds)" required/>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <input class="form-control" type="number" id="period_d" placeholder="Period Derivative (in seconds/seconds)" required/>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-12">
+                            <input class="form-control" type="number" id="dm" placeholder="Dispersion Measure (in parsecs/cc)"/>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-12">
+                            <input class="form-control" type="number" id="rms" placeholder="RMS value of pulsar's timing residuals (in microseconds)"/>
+                        </div>
+                    </div><br>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-12">
+                            <input class="form-control" type="text" id="binary" placeholder="Binary (Y if pulsar is in a binary system, - otherwise)"/>
+                        </div>
+                    </div><br>
+                    <button class="btn btn-success" type="button" id="submit_form">Add point</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-9" style="width:1000px;">
+            <div id="chart1" class="chart"></div>
+        </div>
+    </div>
+    <div class="alert alert-success" id="message">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>Success!</strong> Data point added!
+    </div>
+    <!--<div style="float:left;margin-top:50px">
+        <input type="button" id="switch" value="Swap axes"/>
+    </div>-->
+    <script>
+        document.getElementById('line').onclick = function(){
+            document.getElementsByClassName('line')[1].style.stroke = 'lightgreen';
+            document.getElementById('scatter').setAttribute('class', 'btn btn-default');
+            document.getElementById('line').setAttribute('class', 'btn btn-default active');
+        }
+        document.getElementById('scatter').onclick = function(){
+            document.getElementsByClassName('line')[1].style.stroke = 'none';
+            document.getElementById('scatter').setAttribute('class', 'btn btn-default active');
+            document.getElementById('line').setAttribute('class', 'btn btn-default');
+        }
+        add.onclick = function(){
+            var lightbox = document.getElementById("add_point_form"),
+            dimmer = document.createElement("div");
+    
+            dimmer.style.width =  window.innerWidth + 'px';
+            dimmer.style.height = window.innerHeight + 'px';
+            dimmer.className = 'dimmer';
+            
+            dimmer.onclick = function(){
+                document.body.removeChild(this);   
+                lightbox.style.visibility = 'hidden';
+            }
+                
+            document.body.appendChild(dimmer);
+            
+            lightbox.style.visibility = 'visible';
+            lightbox.style.top = window.innerHeight/2 - 300 + 'px';
+            lightbox.style.left = window.innerWidth/2 - 350 + 'px';
+            return false;
+        }
+    </script>
   </body>
 </html>
 

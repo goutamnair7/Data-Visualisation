@@ -6,7 +6,7 @@ registerKeyboardHandler = function(callback) {
 d3.json("pulsar_data_test.json", function(data){
 
 var sorted = []
-SimpleGraph = function(elemid, options) {
+SimpleGraph = function(elemid, options, flag) {
 
   var self = this;
   this.chart = document.getElementById(elemid);
@@ -31,19 +31,35 @@ SimpleGraph = function(elemid, options) {
   };
 
   // x-scale
-  this.x = d3.scale.linear()
-      .domain([(this.options.xmin)*1000, (this.options.xmax)*1000])
-      .range([0, this.size.width]);
+  if(flag == 0){
+    this.x = d3.scale.linear()
+               .domain([(this.options.xmin)*1000, (this.options.xmax)*1000])
+               .range([0, this.size.width]);
+  }
+  else{
+      this.x = d3.scale.linear()
+                 .domain([(this.options.xmax), (this.options.xmin)])
+                 .range([0, this.size.width]);
+  }
 
   // drag x-axis logic
   this.downx = Math.NaN;
 
   // y-scale (inverted domain)
-  this.y = d3.scale.linear()
-      .domain([(this.options.ymax), (this.options.ymin)])
-      .nice()
-      .range([0, this.size.height])
-      .nice();
+  if(flag == 0){
+    this.y = d3.scale.linear()
+               .domain([(this.options.ymax), (this.options.ymin)])
+               .nice()
+               .range([0, this.size.height])
+               .nice();
+  }
+  else{
+    this.y = d3.scale.linear()
+               .domain([(this.options.ymax)*1000, (this.options.ymin)*1000])
+               .nice()
+               .range([0, this.size.height])
+               .nice();
+  }
 
   // drag y-axis logic
   this.downy = Math.NaN;
@@ -56,16 +72,28 @@ SimpleGraph = function(elemid, options) {
 
   var xrange =  (this.options.xmax - this.options.xmin),
       yrange2 = (this.options.ymax - this.options.ymin) / 2,
-      yrange4 = yrange2 / 2,
-      datacount = 37;
+      yrange4 = yrange2 / 2;
+  this.datacount = 37;
   
-  for(var x in data)
-      sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
-  sorted.sort(function(a, b) { return a[0] - b[0]; });
+  if(flag == 0){
+    for(var x in data)
+        sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
+    sorted.sort(function(a, b) { return a[0] - b[0]; });
+  
+    this.points = d3.range(this.datacount).map(function(i) { 
+        return { x: sorted[i][0]*1000, y: Math.log(sorted[i][1]) }; 
+    }, self);
+  }
+  else{
+    for(var x in data)
+        sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
+    sorted.sort(function(a, b) { return a[1] - b[1]; });
 
-  this.points = d3.range(datacount).map(function(i) { 
-    return { x: sorted[i][0]*1000, y: Math.log(sorted[i][1]) }; 
-  }, self);
+    this.points = d3.range(this.datacount).map(function(i) { 
+        return { y: sorted[i][0]*1000, x: Math.log(sorted[i][1]) }; 
+    }, self);
+  }
+  console.log(this.points);
 
   this.vis = d3.select(this.chart).append("svg")
       .attr("width",  this.cx)
@@ -139,27 +167,33 @@ SimpleGraph = function(elemid, options) {
 // SimpleGraph methods
 //
 
+SimpleGraph.prototype.add_point = function(values){
+    var self = this;
+    var newpoint = {};
+    for(var i in values)
+        newpoint[i] = values[i];
+    data.push(newpoint);
+    sorted = [];
+    for(var x in data)
+        sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
+    sorted.sort(function(a, b) { return a[0] - b[0]; });
+
+    this.datacount += 1;
+    this.points = d3.range(this.datacount).map(function(i) { 
+        return { x: sorted[i][0]*1000, y: Math.log(sorted[i][1]) }; 
+    }, self);
+    self.update();
+}
+
+SimpleGraph.prototype.switch_axes = function(options) {
+
+}
+
 SimpleGraph.prototype.plot_drag = function() {
   var self = this;
   return function() {
     registerKeyboardHandler(self.keydown());
     d3.select('body').style("cursor", "move");
-    /*if (d3.event.altKey) {
-      var p = d3.svg.mouse(self.vis.node());
-      var newpoint = {};
-      newpoint.x = self.x.invert(Math.max(0, Math.min(self.size.width,  p[0])));
-      newpoint.y = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
-      self.points.push(newpoint);
-      self.points.sort(function(a, b) {
-        if (a.x < b.x) { return -1 };
-        if (a.x > b.x) { return  1 };
-        return 0
-      });
-      self.selected = newpoint;
-      self.update();
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-    }*/    
   }
 };
 
@@ -188,7 +222,6 @@ SimpleGraph.prototype.update = function() {
               div.transition()
                  .duration(200)
                  .style("opacity", 1);
-              console.log(d3.event);
               div.html("<table>"+
                        "<tr><td>Pulsar: </td>"+"<td>"+data[sorted[k][2]]['Pulsar']+"</td></tr>"+
                        "<tr><td>TOAs: </td>"+"<td>"+data[sorted[k][2]]['TOAs']+"</td></tr>"+
@@ -422,11 +455,71 @@ SimpleGraph.prototype.yaxis_drag = function(d) {
   }
 }
 
+var x = document.getElementsByName('x-axis'), x_axis = "Period";
+labels = {"Period": "Period in seconds (*10e-3)", "TOAs": "Number of times-of-arrival", "RMS": "RMS value of pulsar's timing residuals (*10e6 seconds)"};
+
+var xmax = Number.NEGATIVE_INFINITY, xmin = Number.POSITIVE_INFINITY;
+for(var i=0;i<data.length;++i){
+    if(data[i][x_axis] > xmax)
+        xmax = data[i][x_axis];
+}
+
+for(var i=0;i<data.length;++i){
+    if(data[i][x_axis] < xmin)
+        xmin = data[i][x_axis];
+}
+
+var flag = 0;
+var ymax = Math.log(1.051006e-19), ymin = Math.log(2.4297e-21);
 graph = new SimpleGraph("chart1", {
-          "xmax": 0.01625242, "xmin": 0.00143781,
-          "ymax": Math.log(1.051006e-19), "ymin": Math.log(2.4297e-21),
-          "title": "Period vs. Period-Derivative",
-          "xlabel": "Period in seconds (* 10e-3)",
+          "xmax": xmax*1.2, "xmin": xmin*0.8,
+          "ymax": ymax, "ymin": ymin,
+          "title": x_axis+" vs. Period-Derivative",
+          "xlabel": labels[x_axis],
           "ylabel": "Log of Period-Derivative (parsecs/cc)"  
-        });
+        }, flag);
+
+document.getElementById('submit_form').onclick = function(){
+    graph.add_point({
+            "Pulsar": document.getElementById('pulsar').value,
+            "TOAs": document.getElementById('toa').value,
+            "Raw Profiles": document.getElementById('raw_p').value,
+            "Period": document.getElementById('period').value, 
+            "Period Derivative": document.getElementById('period_d').value,
+            "DM": document.getElementById('dm').value,
+            "RMS": document.getElementById('rms').value,
+            "Binary": document.getElementById('binary').value
+            });
+    var dimmer = document.getElementsByClassName("dimmer")[0];
+    var lightbox = document.getElementById("add_point_form");
+    document.body.removeChild(dimmer);
+    lightbox.style.visibility = 'hidden';
+    document.getElementById("message").style.visibility = "visible";
+    var inp = document.getElementsByClassName('form-control');
+    for(var i=0;i<inp.length;++i)
+        inp[i].value = '';
+};
+
+/*document.getElementById('switch').onclick = function(){
+    if(flag == 1){
+        flag = 0;
+        graph = new SimpleGraph("chart1", {
+                  "xmax": xmax*1.2, "xmin": xmin*0.8,
+                  "ymax": ymax, "ymin": ymin,
+                  "title": x_axis+" vs. Period-Derivative",
+                  "xlabel": labels[x_axis],
+                  "ylabel": "Log of Period-Derivative (parsecs/cc)"  
+                }, flag);
+    }
+    else{
+        flag = 1;
+        graph = new SimpleGraph("chart1", {
+                  "xmax": ymax, "xmin": ymin,
+                  "ymax": xmax*1.2, "ymin": xmin*0.8,
+                  "title": "Period-Derivative vs. " + x_axis,
+                  "ylabel": labels[x_axis],
+                  "xlabel": "Log of Period-Derivative (parsecs/cc)"  
+                }, flag);
+    }
+};*/
 });
