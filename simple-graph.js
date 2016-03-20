@@ -496,6 +496,9 @@ document.getElementById('submit_form').onclick = function(){
     document.body.removeChild(dimmer);
     lightbox.style.visibility = 'hidden';
     document.getElementById("message").style.visibility = "visible";
+    setTimeout(function(){
+            document.getElementById("message").style.visibility = "hidden";
+            }, 2000);
     var inp = document.getElementsByClassName('form-control');
     for(var i=0;i<inp.length;++i)
         inp[i].value = '';
