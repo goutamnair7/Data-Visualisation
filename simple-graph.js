@@ -233,9 +233,6 @@ SimpleGraph.prototype.update = function() {
                  .style("top", (d3.event.pageY -20) + "px");*/
                  .style("left", (self.x(d.x) + 50)  + "px")
                  .style("top", (self.y(d.y) + 50) + "px");
-              console.log(d3.event.pageX);
-              console.log(data[sorted[k][2]]);
-              console.log(self.x(d.x));
               })
       .on("mouseout", function(d){
               div.transition()
