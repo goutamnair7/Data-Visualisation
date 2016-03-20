@@ -185,10 +185,6 @@ SimpleGraph.prototype.add_point = function(values){
     self.update();
 }
 
-SimpleGraph.prototype.switch_axes = function(options) {
-
-}
-
 SimpleGraph.prototype.plot_drag = function() {
   var self = this;
   return function() {
@@ -233,8 +229,13 @@ SimpleGraph.prototype.update = function() {
                        "<tr><td>Binary: </td>"+"<td>"+data[sorted[k][2]]['Binary']+"</td></tr>"+
                        "</table>"
                   )
-                 .style("left", (d3.event.pageX +10) + "px")
-                 .style("top", (d3.event.pageY -20) + "px");
+                 /*.style("left", (d3.event.pageX +10) + "px")
+                 .style("top", (d3.event.pageY -20) + "px");*/
+                 .style("left", (self.x(d.x) + 50)  + "px")
+                 .style("top", (self.y(d.y) + 50) + "px");
+              console.log(d3.event.pageX);
+              console.log(data[sorted[k][2]]);
+              console.log(self.x(d.x));
               })
       .on("mouseout", function(d){
               div.transition()
