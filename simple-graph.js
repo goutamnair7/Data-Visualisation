@@ -477,7 +477,7 @@ graph = new SimpleGraph("chart1", {
           "ymax": ymax, "ymin": ymin,
           "title": x_axis+" vs. Period-Derivative",
           "xlabel": labels[x_axis],
-          "ylabel": "Log of Period-Derivative (parsecs/cc)"  
+          "ylabel": "Log of Period-Derivative (s/s)"  
         }, flag);
 
 document.getElementById('submit_form').onclick = function(){
