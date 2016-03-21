@@ -3,88 +3,11 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <title>Pulsar Graph</title>
-    <script type="text/javascript" src="jquery-1.12.2.min.js"></script>
-    <script type="text/javascript" src="bootstrap.min.js"></script>
+    <script type="text/javascript" src="./js/jquery-1.12.2.min.js"></script>
+    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v2.js"></script>
-    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
-    <style type="text/css">
-      body { font: 13px sans-serif; }
-      rect { fill: #FFF; }
-      ul {
-        list-style-type: none;
-        margin: 0.5em 0em 0.5em 0em;
-        width: 100%; }
-        ul li {
-          display: table-cell;
-          vertical-align: middle;
-          margin: 0em;
-          padding: 0em 1em; }
-      .axis { font-size: 1.5em; }
-      .chart {
-        background-color: #FFF;
-        width: 1000px;
-        height: 500px;
-        float:left;
-      }
-      path {
-        fill: none;
-        stroke: none;
-        stroke-width: 6px;
-      }
-      circle {
-        fill: white;
-        stroke: green;
-        stroke-width: 2px;
-        fill-opacity: 1;
-        cursor: move; }
-        circle.selected {
-          fill: orange;
-          stroke: red; }
-        circle:hover {
-          fill: orange;
-          stroke: orange; }
-        circle.selected:hover {
-          fill: orange;
-          stroke: red; }
-        text {
-            font-size: 12px;
-            fill: #888;
-        }
-        .tooltip{
-            position: absolute;         
-            text-align: center;         
-            width: 225px;                    
-            height: 180px;                   
-            padding: 2px;               
-            font: 16px serif;      
-            background: white;
-            color:orange;
-        }
-        table{
-            width:100%;
-        }
-        #add_point_form{
-            visibility:hidden;
-            position:absolute;
-            background:white;
-            border:2px solid #3c3c3c;
-            color:black;
-            z-index:100;
-            width: 800px;
-            height:400px;
-            padding:20px;
-        }
-        .dimmer{
-            background: #000;
-            position: absolute;
-            opacity: .5;
-            top: 0;
-            z-index:99;
-        }
-        #message{
-            visibility:hidden;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
   </head>
   <body>
     <div class="row" style="margin-top:60px;width:1350px;">
@@ -145,10 +68,8 @@
         <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
         <strong>Success!</strong> Data point added!
     </div>
-    <!--<div style="float:left;margin-top:50px">
-        <input type="button" id="switch" value="Swap axes"/>
-    </div>-->
-    <script type="text/javascript" src="simple-graph.js"></script>
+
+    <script type="text/javascript" src="./js/simple-graph.js"></script>
     <script>
         document.getElementById('line').onclick = function(){
             document.getElementsByClassName('line')[1].style.stroke = 'lightgreen';
@@ -183,4 +104,3 @@
     </script>
   </body>
 </html>
-
