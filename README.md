@@ -7,3 +7,4 @@ Basic functionality includes:
 - Addition of new data points
 - Re-scaling of x-axis and y-axis (drag a number on the x-axis/y-axis)
 - View as scatter-plot / line-plot
+- Thresholding of data points for period-derivative
