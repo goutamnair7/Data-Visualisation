@@ -1,5 +1,6 @@
 registerKeyboardHandler = function(callback) {
   var callback = callback;
+  console.log("here2");
   d3.select(window).on("keydown", callback);  
 };
 
@@ -148,7 +149,7 @@ d3.json("pulsar_data_test.json", function(data){
         this.points = d3.range(this.datacount).map(function(i) { 
             return { x: sorted[i][0]*1000, y: Math.log(sorted[i][1]) }; 
         }, self);
-        self.update();
+        self.update(null);
     }
 
     SimpleGraph.prototype.plot_drag = function() {
@@ -159,7 +160,7 @@ d3.json("pulsar_data_test.json", function(data){
         }
     };
 
-    SimpleGraph.prototype.update = function() {
+    SimpleGraph.prototype.update = function(threshold) {
         var self = this;
         var lines = this.vis.select("path").attr("d", this.line(this.points));
         
@@ -167,13 +168,23 @@ d3.json("pulsar_data_test.json", function(data){
                              .data(this.points, function(d) { return d; });
 
         var div;
+        var color = d3.scale.category20();
 
         circle.enter().append("circle")
                       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
                       .attr("cx", function(d) { return self.x(d.x); })
                       .attr("cy", function(d) { return self.y(d.y); })
-                      .attr("r", 7.0)
-                      .style("cursor", "ns-resize")
+                      .attr("r", 4.5)
+                      .attr("fill", function(d) { 
+                              if(threshold == null)
+                                  return color(Math.floor(d.x)+1); 
+                              else{
+                                if(d.y > threshold)
+                                  return "red";
+                                else
+                                  return "green";
+                              }
+                           })
                       .on("mousedown",  self.datapoint_drag())
                       .on("mouseover", function(d, k){
 
@@ -189,34 +200,37 @@ d3.json("pulsar_data_test.json", function(data){
                            .duration(200)
                            .style("opacity", 1);
 
-                        div.html("<table>"+
-                                 "<tr><td>Pulsar: </td>"+"<td>"+data[sorted[k][2]]['Pulsar']+"</td></tr>"+
-                                 "<tr><td>TOAs: </td>"+"<td>"+data[sorted[k][2]]['TOAs']+"</td></tr>"+
-                                 "<tr><td>Raw Profiles: </td>"+"<td>"+data[sorted[k][2]]['Raw Profiles']+"</td></tr>"+
-                                 "<tr><td>Period: </td>"+"<td>"+data[sorted[k][2]]['Period']+"</td></tr>"+
-                                 "<tr><td>Period Derivative: </td>"+"<td>"+data[sorted[k][2]]['Period Derivative']+"</td></tr>"+
-                                 "<tr><td>DM: </td>"+"<td>"+data[sorted[k][2]]['DM']+"</td></tr>"+
-                                 "<tr><td>RMS: </td>"+"<td>"+data[sorted[k][2]]['RMS']+"</td></tr>"+
-                                 "<tr><td>Binary: </td>"+"<td>"+data[sorted[k][2]]['Binary']+"</td></tr>"+
-                                 "</table>"
+                        div.html("<br><b>Pulsar: " + data[sorted[k][2]]['Pulsar']+"</b><br><br>"+
+                           "Period: " + data[sorted[k][2]]['Period'] + "<br>"+
+                           "Period Derivative: " + data[sorted[k][2]]['Period Derivative']
                         )
-                        .style("left", (self.x(d.x) + 50)  + "px")
-                        .style("top", (self.y(d.y) + 50) + "px");
-                      })
-                      .on("mouseout", function(d){
-                        div.transition()
+                        .style("left", (self.x(d.x) + 130)  + "px")
+                        .style("top", (self.y(d.y)) + "px");
+                          
+                    })
+                    .on("mouseout", function(d){
+                        /*div.transition()
                            .duration(500)
-                           .style("opacity", 0);
+                           .style("opacity", 0);*/
 
                         $('.tooltip').remove();
                             self.selected = null;
-                      });
-
+                    });
         circle
             .attr("class", function(d) { return d === self.selected ? "selected" : null; })
             .attr("cx",function(d) { 
-                    return self.x(d.x); })
-            .attr("cy", function(d) { return self.y(d.y); });
+                return self.x(d.x); })
+            .attr("cy", function(d) { return self.y(d.y); })
+            .attr("fill", function(d) { 
+              if(threshold == null)
+                  return color(Math.floor(d.x)+1); 
+              else{
+                if(d.y > threshold)
+                  return "red";
+                else
+                  return "green";
+              }
+            })
 
         circle.exit().remove();
 
@@ -233,7 +247,7 @@ d3.json("pulsar_data_test.json", function(data){
             document.onselectstart = function() { return false; };
             self.selected = d;//self.dragged = d;
             $('.tooltip').remove();
-                self.update();
+                self.update(null);
             }
     };
 
@@ -245,7 +259,7 @@ d3.json("pulsar_data_test.json", function(data){
     
             if (self.dragged) {
                 self.dragged.y = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
-                self.update();
+                self.update(null);
             };
             if (!isNaN(self.downx)) {
                 d3.select('body').style("cursor", "ew-resize");
@@ -313,10 +327,22 @@ d3.json("pulsar_data_test.json", function(data){
             switch (d3.event.keyCode) {
                 case 46: {
                     var i = self.points.indexOf(self.selected);
-                    self.points.splice(i, 1);
+                    var point = self.points.splice(i, 1), data_point;
+                    for(var i=0;i<data.length;++i){
+                        if((data[i]['Period'])*1000 == point[0].x && Math.log(data[i]['Period Derivative']) == point[0].y){
+                            data_point = data.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    sorted = [];
+                    for(var x in data)
+                        sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
+                    sorted.sort(function(a, b) { return a[0] - b[0]; });
+
                     self.selected = null;
                     $('.tooltip').remove();
-                    self.update();
+                    self.update(null);
                     break;
                 }
             }
@@ -401,7 +427,7 @@ d3.json("pulsar_data_test.json", function(data){
 
             gy.exit().remove();
             self.plot.call(d3.behavior.zoom().x(self.x).y(self.y).on("zoom", self.redraw()));
-            self.update();    
+            self.update(null);    
         }  
     }
 
@@ -472,4 +498,17 @@ d3.json("pulsar_data_test.json", function(data){
             inp[i].value = '';
     };
 
+    document.getElementById("add_threshold").onclick = function(){
+        var threshold = document.getElementById("threshold_value").value;
+        if(threshold == "")
+            return;
+
+        threshold = Math.log(Number(threshold));
+        graph.update(threshold);
+    }
+    
+    document.getElementById("remove_threshold").onclick = function(){
+        document.getElementById("threshold_value").value = "";
+        graph.update(null);
+    }
 });
