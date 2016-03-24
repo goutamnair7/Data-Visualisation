@@ -144,9 +144,10 @@ d3.json("pulsar_data_test.json", function(data){
         for(var x in data)
             sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
         sorted.sort(function(a, b) { return a[0] - b[0]; });
-
+        //console.log(sorted);
         this.datacount += 1;
-        this.points = d3.range(this.datacount).map(function(i) { 
+        console.log(this.datacount);
+        this.points = d3.range(this.datacount).map(function(i) { console.log(i);
             return { x: sorted[i][0]*1000, y: Math.log(sorted[i][1]) }; 
         }, self);
         self.update(null);
@@ -319,7 +320,7 @@ d3.json("pulsar_data_test.json", function(data){
             }
         }
     }
-
+    mydata = data;
     SimpleGraph.prototype.keydown = function() {
         var self = this;
         return function() {
@@ -339,9 +340,17 @@ d3.json("pulsar_data_test.json", function(data){
                     for(var x in data)
                         sorted.push([data[x]['Period'], data[x]['Period Derivative'], x])
                     sorted.sort(function(a, b) { return a[0] - b[0]; });
-
+                    //console.log(sorted);
                     self.selected = null;
                     $('.tooltip').remove();
+                    document.getElementById("text_message").innerHTML = "Data point deleted";
+                    document.getElementById("message").style.visibility = "visible";
+                    setTimeout(function(){
+                        document.getElementById("message").style.visibility = "hidden";
+                        }, 2000);
+
+                    self.datacount -= 1;
+
                     self.update(null);
                     break;
                 }
@@ -489,10 +498,13 @@ d3.json("pulsar_data_test.json", function(data){
         var lightbox = document.getElementById("add_point_form");
         document.body.removeChild(dimmer);
         lightbox.style.visibility = 'hidden';
+
+        document.getElementById("text_message").innerHTML = "Data point added";
         document.getElementById("message").style.visibility = "visible";
         setTimeout(function(){
             document.getElementById("message").style.visibility = "hidden";
             }, 2000);
+
         var inp = document.getElementsByClassName('form-control');
         for(var i=0;i<inp.length;++i)
             inp[i].value = '';
